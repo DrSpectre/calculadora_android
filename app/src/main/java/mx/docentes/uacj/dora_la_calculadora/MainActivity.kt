@@ -1,5 +1,8 @@
 package mx.docentes.uacj.dora_la_calculadora
 
+import android.content.Context
+import android.media.MediaPlayer
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -9,6 +12,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -40,7 +44,8 @@ data class BotonModelo(
     val id: String,
     var numero: String,
     var operacion_aritmetica: OperacionesAritmeticas = OperacionesAritmeticas.Ninguna,
-    var operacion_a_mostrar: String = ""
+    var operacion_a_mostrar: String = "",
+    var sonido: Uri? = null
     ) {}
 
 enum class EstadosCalculadora{
@@ -77,7 +82,7 @@ var hileras_de_botones_a_dibujar = arrayOf(
     ),
     arrayOf(
         BotonModelo("boton_punto", "."),
-        BotonModelo("boton_0", "0"),
+        BotonModelo("boton_0", "0", sonido = Uri(R.raw.terror)),
         BotonModelo("boton_operacion", "OP"),
     )
 
@@ -89,14 +94,14 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             Dora_la_calculadoraTheme {
-                Calculadora()
+                Calculadora(modifier = Modifier.fillMaxSize(), contexto = this)
             }
         }
     }
 }
 
 @Composable
-fun Calculadora() {
+fun Calculadora(modifier: Modifier, contexto: Context? = null) {
     var pantalla_calculadora = remember { mutableStateOf("0") }
     var numero_anterior = remember { mutableStateOf("0") }
     var estado_de_la_calculadora = remember { mutableStateOf(EstadosCalculadora.CuandoEstaEnCero) }
@@ -184,8 +189,8 @@ fun Calculadora() {
     }
 
 
-    Column(modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
+    Column(modifier = modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally) {
         Text(text = "${pantalla_calculadora.value}", modifier = Modifier
             .padding(10.dp)
@@ -210,7 +215,7 @@ fun Calculadora() {
                             EstadosCalculadora.SeleccionadoOperacion -> {
                                 Boton(boton_a_dibujar.operacion_a_mostrar, alPulsar = {
                                     pulsar_boton(boton_a_dibujar)
-                                })
+                                }, contexto = contexto, sonido = boton_a_dibujar.sonido)
                             }
                             else -> {
                                 Boton(boton_a_dibujar.numero, alPulsar = {
@@ -229,20 +234,31 @@ fun Calculadora() {
 }
 
 @Composable
-fun Boton(etiqueta: String, alPulsar: () -> Unit = {}){
-    Button(onClick = alPulsar, modifier = Modifier.fillMaxHeight(0.2F)) {
-        Image(
-            painter = painterResource(R.drawable.conde_1),
-            contentDescription = "Una foto de perfil del conde de contar",
-            modifier = Modifier.size(25.dp)
-        )
+fun Boton(etiqueta: String, sonido: Uri? = null, alPulsar: () -> Unit = {}, contexto: Context? = null){
+    fun reproducir_sonido(){
+        if(sonido != null && contexto != null){
+            val reproductor_audio: MediaPlayer = MediaPlayer.create(contexto, sonido)
 
-        Text(
-            etiqueta, modifier = Modifier
-                .background(Color.Green),
-            textAlign = TextAlign.Center,
-            color = Color.Red
-        )
+            reproductor_audio.start()
+        }
+
+    }
+
+    Button(onClick = {alPulsar}, modifier = Modifier.fillMaxHeight(0.2F)) {
+        // https://developer.android.com/develop/ui/compose/layouts/basics
+        Box{
+            Image(
+                painter = painterResource(R.drawable.images),
+                contentDescription = "Una foto de perfil del conde de contar",
+                modifier = Modifier.size(25.dp)
+            )
+
+            Text(
+                etiqueta, modifier = Modifier,
+                textAlign = TextAlign.Center,
+                color = Color.Red
+            )
+        }
     }
 }
 
@@ -250,7 +266,7 @@ fun Boton(etiqueta: String, alPulsar: () -> Unit = {}){
 @Composable
 fun GreetingPreview() {
     Dora_la_calculadoraTheme {
-        Calculadora()
+        Calculadora(modifier = Modifier.fillMaxSize())
     }
 }
 
