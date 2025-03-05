@@ -142,10 +142,28 @@ fun Calculadora() {
                     pantalla_calculadora.value = "0"
                     return
                 }
+                // Aqui imprimimos el resultado
                 else if(boton.operacion_aritmetica == OperacionesAritmeticas.Resultado &&
                     operacion_seleccionada.value != OperacionesAritmeticas.Ninguna){
 
-                    pantalla_calculadora.value = "GANASTE ESTE MARAVILLOSO RESULTADO"
+                    when(operacion_seleccionada.value){
+
+                        OperacionesAritmeticas.Suma -> {
+                            pantalla_calculadora.value = numero_anterior.value + "+" + pantalla_calculadora.value
+                        }
+                        OperacionesAritmeticas.Resta -> {
+                            pantalla_calculadora.value = numero_anterior.value + "-" + pantalla_calculadora.value
+                        }
+                        OperacionesAritmeticas.Multiplicacion -> {
+                            pantalla_calculadora.value = numero_anterior.value + "*" + pantalla_calculadora.value
+                        }
+                        OperacionesAritmeticas.Division -> {
+                            pantalla_calculadora.value = numero_anterior.value + "/" + pantalla_calculadora.value
+                        }
+
+                        else -> {}
+                    }
+
 
                     estado_de_la_calculadora.value = EstadosCalculadora.MostrandoResultado
                     return
@@ -155,7 +173,13 @@ fun Calculadora() {
             }
 
 
-            EstadosCalculadora.MostrandoResultado -> TODO()
+            EstadosCalculadora.MostrandoResultado -> {
+                numero_anterior.value  = ""
+
+                pantalla_calculadora.value = "0"
+
+                estado_de_la_calculadora.value = EstadosCalculadora.CuandoEstaEnCero
+            }
         }
     }
 
